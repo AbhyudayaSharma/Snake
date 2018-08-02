@@ -6,7 +6,14 @@
 #include <curses.h>
 #include <string.h>
 
-#define MY_CURSOR ACS_DIAMOND
+#define SNAKE_HEAD ACS_DIAMOND
+#define SNAKE_LEN 10
+#define ADD_POINT(point) do { mvaddch(point.y, point.x, ACS_BLOCK); } while (0)
+
+struct Point {
+    int y;
+    int x;
+};
 
 inline bool isInBounds(int y, int x) {
     int maxX, maxY;
@@ -18,20 +25,20 @@ inline bool isInBounds(int y, int x) {
     }
 }
 
-/*
- * The y and x are the current locations of the pointer.
- * dy and dx are the change in y and x respectively.
- */
-void moveCursor(int* y, int* x, int dy, int dx) {
-    if (isInBounds(*y + dy, *x + dx)) {
-        clear();
-        *y += dy;
-        *x += dx;
-        mvaddch(*y, *x, MY_CURSOR);
+void moveSnake(struct Point* points, int snakeLen, int dy, int dx) {
+    clear();
+    for (int i = snakeLen- 1; i > 0; i--) {
+        points[i].y = points[i - 1].y;
+        points[i].x = points[i - 1].x;
+
+        ADD_POINT(points[i]);
     }
+    points[0].y += dy;
+    points[0].x += dx;
+    mvaddch(points[0].y, points[0].x, SNAKE_HEAD); 
 }
 
-void resetCursor(int* y, int* x) {
+void resetCursor(int* y, int* x, struct Point* points, int snakeLen) {
     clear();
     int maxX, maxY;
     getmaxyx(stdscr, maxY, maxX);
@@ -39,7 +46,14 @@ void resetCursor(int* y, int* x) {
     int curX = maxX / 2;
     int curY = maxY / 2;
 
-    mvaddch(curY, curX, MY_CURSOR); 
+    mvaddch(curY, curX, SNAKE_HEAD); 
+    points[0].y = curY;
+    points[0].x = curX;
+    for (int i = 1; i < snakeLen; i++) {
+        points[i].y = points[i - 1].y;
+        points[i].x = points[i - 1].x - 1;
+        ADD_POINT(points[i]);
+    }
 
     // Update the locations
     *y = curY;
@@ -55,7 +69,6 @@ int main(int argc, char ** argv) {
     clear();
     keypad(stdscr, TRUE);
     curs_set(0); // Hide the cursor
-
 
     // Start here
     printw("Hello World.\nA simple movement tool.\nPress 'q' to quit.\nPress any key to continue...");
@@ -75,30 +88,35 @@ int main(int argc, char ** argv) {
     }
 
     int curY, curX;
-    resetCursor(&curY, &curX);
+
+    // head is points[0]
+    struct Point points[SNAKE_LEN];
+    resetCursor(&curY, &curX, points, SNAKE_LEN);
 
     bool flag = true;
     while (flag) {
         // Check for terminal size change
+        /*
         if (!isInBounds(curY, curX)) {
             clear();
-            resetCursor(&curY, &curX);
+            resetCursor(&curY, &curX, points, SNAKE_LEN);
             refresh(); 
         }
+        */
         
         int input = getch();
         switch (input) {
             case KEY_UP:
-                moveCursor(&curY, &curX, -1, 0);
+                moveSnake(points, SNAKE_LEN, -1, 0);
                 break;
             case KEY_DOWN:
-                moveCursor(&curY, &curX, 1, 0);
+                moveSnake(points, SNAKE_LEN, 1, 0);
                 break;
             case KEY_LEFT:
-                moveCursor(&curY, &curX, 0, -1);
+                moveSnake(points, SNAKE_LEN, 0, -1);
                 break;
             case KEY_RIGHT:
-                moveCursor(&curY, &curX, 0, 1);
+                moveSnake(points, SNAKE_LEN, 0, 1);
                 break;
             case 'q':
                 flag = false;
