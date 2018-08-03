@@ -40,7 +40,6 @@ bool runGame() {
     } else {
         return true;
     }
-
 }
 
 inline bool isInBounds(int y, int x) {
@@ -90,6 +89,31 @@ bool moveSnake(struct Point* points, int snakeLen, int dy, int dx) {
     return true;
 }
 
+/*
+ * Returns the timeout (ms) based on the difficulty
+ * Higher the level, less is the timeout
+ * Timeout is the delay between the snake moving automatically.
+ * At lower levels (higer timeouts), the snake can be accelerated
+ * by keeping the key pressed.
+ */
+int getTimeout(int level) {
+    // TODO Create a difficulty based timeout
+    return 200;
+}
+
+void validateInput(int* input) {
+    switch (*input) {
+        case KEY_UP:
+        case KEY_DOWN:
+        case KEY_RIGHT:
+        case KEY_LEFT:
+        case 'q':
+            break;
+        default:
+            *input = ERR;
+    }
+}
+
 void resetSnake(struct Point* points, int snakeLen) {
     clear();
     int maxX, maxY;
@@ -119,7 +143,7 @@ void loop() {
     resetSnake(points, SNAKE_LEN);
 
     bool flag = true;
-    int direction = 0;
+    int direction = KEY_RIGHT; // Snake is initially aligned along the +x direction
     bool overlap = false;
 
     while (flag) {
@@ -129,6 +153,9 @@ void loop() {
         }
 
         int input = getch();
+        validateInput(&input);
+        input = (input == ERR) ? direction : input;
+
         switch (input) {
             case KEY_UP:
                 if (direction != KEY_DOWN) {
@@ -163,17 +190,16 @@ void loop() {
             flag = false;
         }
         refresh();
+        timeout(getTimeout(0)); // Start halfdelay after getting the first keystroke
     }
 
     if (overlap) {
         clear();
+        timeout(-1); // reset timeout
         addstr("Game Over!\nYour snake ate itself!\nPress any key to exit...");
         refresh();
         getch();
     }
-
-    // Close window
-    endwin();
 }
 
 int main(int argc, char ** argv) {
