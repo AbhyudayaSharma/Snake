@@ -190,7 +190,7 @@ void loop() {
             flag = false;
         }
         refresh();
-        timeout(getTimeout(0)); // Start halfdelay after getting the first keystroke
+        timeout(getTimeout(0)); // Start automatic movement after first keystroke
     }
 
     if (overlap) {
