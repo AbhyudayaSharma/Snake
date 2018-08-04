@@ -65,7 +65,7 @@ bool isOverlapped(struct Point p, struct Point* points, int snakeLen) {
 bool moveSnake(struct Point* points, int snakeLen, int dy, int dx) {
     // restrict moving off the screen
     if (!isInBounds(points[0].y + dy, points[0].x + dx)) {
-        return true; // Reaching the bounds does not mean the end of the game.
+        return false; // Reaching the bounds means the end of the game.
     }
 
     // check overlap
@@ -145,6 +145,7 @@ void loop() {
     bool flag = true;
     int direction = KEY_RIGHT; // Snake is initially aligned along the +x direction
     bool overlap = false;
+    bool getInput = true;
 
     while (flag) {
         // Check for terminal size change
@@ -152,7 +153,11 @@ void loop() {
             resetSnake(points, SNAKE_LEN);
         }
 
-        int input = getch();
+        int input = ERR;
+        if (getInput) {
+            input = getch();
+        }
+
         validateInput(&input);
         input = (input == ERR) ? direction : input;
 
@@ -161,24 +166,40 @@ void loop() {
                 if (direction != KEY_DOWN) {
                     overlap = !moveSnake(points, SNAKE_LEN, -1, 0);
                     direction = input;
+                    getInput = true;
+                } else {
+                    getInput = false;
+                    continue;
                 }
                 break;
             case KEY_DOWN:
                 if (direction != KEY_UP) {
                     overlap = !moveSnake(points, SNAKE_LEN, 1, 0);
                     direction = input;
+                    getInput = true;
+                } else {
+                    getInput = false;
+                    continue;
                 }
                 break;
             case KEY_LEFT:
                 if (direction != KEY_RIGHT) {
                     overlap = !moveSnake(points, SNAKE_LEN, 0, -1);
                     direction = input;
+                    getInput = true;
+                } else {
+                    getInput = false;
+                    continue;
                 }
                 break;
             case KEY_RIGHT:
                 if (direction != KEY_LEFT) {
                     overlap = !moveSnake(points, SNAKE_LEN, 0, 1);
                     direction = input;
+                    getInput = true;
+                } else {
+                    getInput = false;
+                    continue;
                 }
                 break;
             case 'q':
