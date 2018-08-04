@@ -6,6 +6,8 @@
 #include <stdbool.h>
 #include <curses.h>
 #include <string.h>
+#include <stdlib.h>
+#include <time.h>
 
 #define SNAKE_HEAD ACS_DIAMOND 
 #define SNAKE_LEN 20
@@ -25,8 +27,10 @@ void initCurses() {
     raw();
     noecho();
     clear();
+    start_color();
     keypad(stdscr, TRUE);
     curs_set(0); // Hide the cursor
+    init_pair(1, COLOR_RED, COLOR_BLACK);
 }
 
 // Acts as a splash screen
@@ -52,7 +56,7 @@ inline bool isInBounds(int y, int x) {
     }
 }
 
-bool isOverlapped(struct Point p, struct Point* points, int snakeLen) {
+bool isOverlapped(struct Point p, const struct Point* points, int snakeLen) {
     for (int i = 0; i < snakeLen; i++) {
         if (arePointsEqual(p, points[i])) {
             return true;
@@ -69,7 +73,7 @@ bool moveSnake(struct Point* points, int snakeLen, int dy, int dx) {
     }
 
     // check overlap
-    if (isOverlapped((struct Point) {points[0].y + dy, points[0].x + dx}, points, snakeLen)) {
+    if (isOverlapped((struct Point) { points[0].y + dy, points[0].x + dx }, points, snakeLen)) {
         return false;
     }
 
@@ -114,7 +118,35 @@ void validateInput(int* input) {
     }
 }
 
-void resetSnake(struct Point* points, int snakeLen) {
+/* Returns the location of the added food */
+struct Point addFood(bool eaten, const struct Point* points, int snakeLen) {
+    static int foodX;
+    static int foodY;
+
+    int maxX;
+    int maxY;
+
+    getmaxyx(stdscr, maxY, maxX);
+
+    if (eaten) {
+        // Check if the food is not part of the snake
+        do {
+            foodY = rand() % maxY;
+            foodX = rand() % maxX;
+        } while (isOverlapped((struct Point) {foodY, foodX}, points, snakeLen));
+    }
+
+    // Food is coloured
+    attron(COLOR_PAIR(1)); 
+    mvaddch(foodY, foodX, ACS_BLOCK);
+    attroff(COLOR_PAIR(1));
+
+    refresh();
+    return (struct Point) { foodY, foodX };
+}
+
+/* Returns the location of the added food */
+struct Point resetSnake(struct Point* points, int snakeLen) {
     clear();
     int maxX, maxY;
     getmaxyx(stdscr, maxY, maxX);
@@ -135,23 +167,28 @@ void resetSnake(struct Point* points, int snakeLen) {
     }
 
     refresh();
+
+    return addFood(true, points, snakeLen); 
 }
 
 void loop() {
     // head is points[0]
     struct Point points[SNAKE_LEN];
-    resetSnake(points, SNAKE_LEN);
+    struct Point foodLocation = resetSnake(points, SNAKE_LEN);
 
     bool flag = true;
     int direction = KEY_RIGHT; // Snake is initially aligned along the +x direction
     bool overlap = false;
     bool getInput = true;
+    unsigned int score = 0;
 
     while (flag) {
         // Check for terminal size change
         if (!isInBounds(points[0].y, points[0].x)) {
             resetSnake(points, SNAKE_LEN);
         }
+        
+        addFood(false, points, SNAKE_LEN);
 
         int input = ERR;
         if (getInput) {
@@ -210,6 +247,13 @@ void loop() {
         if (overlap) {
             flag = false;
         }
+
+        // Check for eating food
+        if (arePointsEqual(points[0], foodLocation)) {
+            foodLocation = addFood(true, points, SNAKE_LEN);
+            score++;
+        }
+
         refresh();
         timeout(getTimeout(0)); // Start automatic movement after first keystroke
     }
@@ -226,6 +270,7 @@ void loop() {
 int main(int argc, char ** argv) {
     // Init curses
     initCurses();
+    srand(time(NULL)); // Initialize rand with seed as current time
 
     if (runGame()) {
         /* Main logic of the program */
