@@ -3,11 +3,17 @@
  */
 
 #include <stdio.h>
-#include <stdbool.h>
 #include <curses.h>
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
+
+#ifdef _WIN32
+#define true TRUE
+#define false FALSE
+#else
+#include <stdbool.h>
+#endif
 
 #define SNAKE_HEAD ACS_DIAMOND 
 #define SNAKE_LEN 20
