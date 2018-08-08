@@ -240,7 +240,7 @@ void loop() {
         // Check for terminal size change
         if (!isInBounds(points[0].y, points[0].x)) {
             resetSnake(points, SNAKE_LEN);
-            foodLocation = addFood(points, SNAKE_LEN, true);
+            foodLocation = addFood(true, points, SNAKE_LEN);
             refresh();
         }
         
