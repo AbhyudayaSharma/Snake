@@ -4,10 +4,10 @@
 
 #include <stdio.h>
 #include <curses.h>
-#include <string.h>
 #include <stdlib.h>
 #include <time.h>
-#include <string.h>
+
+#include "arraylist.h"
 
 // PDCurses defines bool as unsigned char
 // Use common way to invoke strcpy
@@ -23,19 +23,27 @@
 #include <stdbool.h>
 
 #define stringCopy(dest, size, source) strncpy(dest, source, size)
-#endif
+#endif // _WIN32
 
+// Chars drawn for snake head and snake body points
 #define SNAKE_HEAD ACS_DIAMOND 
-#define SNAKE_LEN 20
-#define ADD_POINT(point) do { mvaddch(point.y, point.x, ACS_BLOCK); } while (0)
+#define SNAKE_BODY ACS_BLOCK
+// Initial snake length
+#define SNAKE_LEN 3
+
+// macros for drawing body points and snake head
+#define DRAW_POINT(point) do { mvaddch(point.y, point.x, SNAKE_BODY); } while (0)
+#define DRAW_HEAD(point) do { mvaddch(point.y, point.x, SNAKE_HEAD); } while (0)
+
+// max length for game over reason
 #define MAX_REASON_LEN 100
 
-struct Point {
+typedef struct {
     int y;
     int x;
-};
+} Point;
 
-inline bool arePointsEqual(struct Point x, struct Point y) {
+inline bool arePointsEqual(Point x, Point y) {
     return x.x == y.x && x.y == y.y;
 }
 
@@ -63,23 +71,23 @@ bool runGame() {
     }
 }
 
-inline bool isInBounds(int y, int x) {
-    int maxX, maxY;
-    getmaxyx(stdscr, maxY, maxX);
-    if (y >= 0 && y < maxY && x >= 0 && x < maxX) {
+inline bool isInBounds(Point p) {
+    int xMax, yMax;
+    getmaxyx(stdscr, yMax, xMax);
+    if (p.y >= 0 && p.y < yMax && p.x >= 0 && p.x < xMax) {
         return true;
     } else {
         return false;
     }
 }
 
-bool isOverlapped(struct Point p, const struct Point* points, int snakeLen) {
-    for (int i = 0; i < snakeLen; i++) {
-        if (arePointsEqual(p, points[i])) {
+bool isOverlapped(Point p, const ArrayList* points) {
+    size_t len = listGetLength(points);
+    for (int i = 0; i < len; i++) {
+        if (arePointsEqual(p, listGet(Point, points, i))) {
             return true;
         }
     }
-
     return false;
 }
 
@@ -117,16 +125,22 @@ void endGame(const char* reason, unsigned int score) {
 
 /*
  * reason is changed iff the function returns false
+ * dy = change in y; dx = change in x
  */
-bool moveSnake(struct Point* points, int snakeLen, int dy, int dx, char* reason) {
+bool moveSnake(ArrayList* points, int dy, int dx, char* reason) {
+    Point head = listGet(Point, points, 0); // head before moving
+    Point movedHead; // head after moving
+    movedHead.x = head.x + dx;
+    movedHead.y = head.y + dy;
+
     // restrict moving off the screen
-    if (!isInBounds(points[0].y + dy, points[0].x + dx)) {
+    if (!isInBounds(movedHead)) {
         stringCopy(reason, MAX_REASON_LEN, "Your snake went out of bounds!");
         return false; // Reaching the bounds means the end of the game.
     }
 
-    // check moved
-    if (isOverlapped((struct Point) { points[0].y + dy, points[0].x + dx }, points, snakeLen)) {
+    // check overlap
+    if (isOverlapped(movedHead, points)) {
         stringCopy(reason, MAX_REASON_LEN, "Your snake ate itself!");
         return false;
     }
@@ -134,16 +148,14 @@ bool moveSnake(struct Point* points, int snakeLen, int dy, int dx, char* reason)
     clear();
 
     // add snake's body points
-    for (int i = snakeLen- 1; i > 0; i--) {
-        points[i].y = points[i - 1].y;
-        points[i].x = points[i - 1].x;
-
-        ADD_POINT(points[i]);
+    for (int i = listGetLength(points) - 1; i > 0; i--) {
+        Point prevPoint = listGet(Point, points, i - 1);
+        listSet(points, i, &prevPoint);
+        DRAW_POINT(listGet(Point, points, i));
     }
 
-    points[0].y += dy;
-    points[0].x += dx;
-    mvaddch(points[0].y, points[0].x, SNAKE_HEAD);
+    listSet(points, 0, &movedHead);
+    mvaddch(movedHead.y, movedHead.x, SNAKE_HEAD);
     return true;
 }
 
@@ -173,60 +185,65 @@ void validateInput(int* input) {
 }
 
 /* Returns the location of the added food */
-struct Point addFood(bool eaten, const struct Point* points, int snakeLen) {
-    static int foodX;
-    static int foodY;
+Point addFood(bool eaten, const ArrayList* points) {
+    static Point food;
 
-    int maxX;
-    int maxY;
+    int xMax;
+    int yMax;
 
-    getmaxyx(stdscr, maxY, maxX);
+    getmaxyx(stdscr, yMax, xMax);
 
     if (eaten) {
         // Check if the food is not part of the snake
+        // Generally O(1)
         do {
-            foodY = rand() % maxY;
-            foodX = rand() % maxX;
-        } while (isOverlapped((struct Point) {foodY, foodX}, points, snakeLen));
+            // Food should be inside bounds
+            food.y = rand() % yMax;
+            food.x = rand() % xMax;
+        } while (isOverlapped(food, points));
     }
 
-    // Food is coloured
+    // Food is coloured and bold
     attron(COLOR_PAIR(1)); 
-    mvaddch(foodY, foodX, ACS_BLOCK);
+    attron(A_BOLD);
+    mvaddch(food.y, food.x, ACS_BLOCK);
     attroff(COLOR_PAIR(1));
+    attroff(A_BOLD);
 
     refresh();
-    return (struct Point) { foodY, foodX };
+    return food;
 }
 
-void resetSnake(struct Point* points, int snakeLen) {
+/* expects a blank ArrayList */
+void resetSnake(ArrayList* points) {
     clear();
-    int maxX, maxY;
-    getmaxyx(stdscr, maxY, maxX);
+    int xMax, yMax;
+    getmaxyx(stdscr, yMax, xMax);
 
-    int curX = maxX / 2;
-    int curY = maxY / 2;
-
-    // Snake head
-    mvaddch(curY, curX, SNAKE_HEAD);
-    points[0].y = curY;
-    points[0].x = curX;
+    //Add and draw snake head
+    Point head;
+    head.x = xMax / 2;
+    head.y = yMax / 2;
+    listAddLast(points, &head);
+    mvaddch(head.y, head.x, SNAKE_HEAD);
 
     // Snake body
-    for (int i = 1; i < snakeLen; i++) {
-        points[i].y = points[i - 1].y;
-        points[i].x = points[i - 1].x - 1;
-        ADD_POINT(points[i]);
+    for (int i = 1; i < SNAKE_LEN; i++) {
+        Point point = listGet(Point, points, i - 1);
+        point.x -= 1;
+        listAddLast(points, &point);
+        DRAW_POINT(point);
     }
 }
 
 void loop() {
-    // head is points[0]
-    struct Point points[SNAKE_LEN];
-    resetSnake(points, SNAKE_LEN);
-    
+    // Snake head is stored at index 0
+    ArrayList points;
+    initArrayList(&points, SNAKE_LEN * 2, sizeof(Point));
+    resetSnake(&points);
+
     // add food
-    struct Point foodLocation = addFood(true, points, SNAKE_LEN);
+    Point foodLocation = addFood(true, &points);
     refresh();
 
     bool flag = true;
@@ -238,13 +255,17 @@ void loop() {
 
     while (flag) {
         // Check for terminal size change
-        if (!isInBounds(points[0].y, points[0].x)) {
-            resetSnake(points, SNAKE_LEN);
-            foodLocation = addFood(true, points, SNAKE_LEN);
+        Point head = listGet(Point, &points, 0);
+        if (!isInBounds(head)) {
+            // resetSnake requires an empty list
+            freeArrayList(&points);
+            initArrayList(&points, SNAKE_LEN * 2, sizeof(Point));
+            resetSnake(&points);
+            foodLocation = addFood(true, &points);
             refresh();
         }
         
-        addFood(false, points, SNAKE_LEN);
+        foodLocation = addFood(false, &points);
 
         int input = ERR;
         if (getInput) {
@@ -257,7 +278,7 @@ void loop() {
         switch (input) {
             case KEY_UP:
                 if (direction != KEY_DOWN) {
-                    moved = moveSnake(points, SNAKE_LEN, -1, 0, gameOverReason);
+                    moved = moveSnake(&points, -1, 0, gameOverReason);
                     direction = input;
                     getInput = true;
                 } else {
@@ -267,7 +288,7 @@ void loop() {
                 break;
             case KEY_DOWN:
                 if (direction != KEY_UP) {
-                    moved = moveSnake(points, SNAKE_LEN, 1, 0, gameOverReason);
+                    moved = moveSnake(&points, 1, 0, gameOverReason);
                     direction = input;
                     getInput = true;
                 } else {
@@ -277,7 +298,7 @@ void loop() {
                 break;
             case KEY_LEFT:
                 if (direction != KEY_RIGHT) {
-                    moved = moveSnake(points, SNAKE_LEN, 0, -1, gameOverReason);
+                    moved = moveSnake(&points, 0, -1, gameOverReason);
                     direction = input;
                     getInput = true;
                 } else {
@@ -287,7 +308,7 @@ void loop() {
                 break;
             case KEY_RIGHT:
                 if (direction != KEY_LEFT) {
-                    moved = moveSnake(points, SNAKE_LEN, 0, 1, gameOverReason);
+                    moved = moveSnake(&points, 0, 1, gameOverReason);
                     direction = input;
                     getInput = true;
                 } else {
@@ -307,8 +328,9 @@ void loop() {
         }
 
         // Check for eating food
-        if (arePointsEqual(points[0], foodLocation)) {
-            foodLocation = addFood(true, points, SNAKE_LEN);
+        if (arePointsEqual(listGet(Point, &points, 0), foodLocation)) {
+            foodLocation = addFood(true, &points);
+            listAddLast(&points, &listGet(Point, &points, listGetLength(&points) - 1));
             score++;
         }
 
@@ -316,19 +338,19 @@ void loop() {
         timeout(getTimeout(0)); // Start automatic movement after first keystroke
     }
 
+    freeArrayList(&points);
     endGame(gameOverReason, score);
 }
 
 int main(int argc, char ** argv) {
-    // Init curses
-    initCurses();
+    initCurses(); // Init curses
     srand(time(NULL)); // Initialize rand with seed as current time
 
     if (runGame()) {
-        /* Main logic of the program */
-        loop();
+        loop(); /* Main logic of the program */
     }
 
     endwin(); // cleanup curses
     return 0;
 }
+

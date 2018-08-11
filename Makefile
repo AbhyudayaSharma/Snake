@@ -1,15 +1,25 @@
+IDIR = include
+ODIR = obj
 CC = gcc
-CFLAGS = -O2 -Wall -pedantic -I. -std=c11
+CFLAGS = -O2 -Wall -pedantic -I$(IDIR) -std=c11 -Werror
 LIBS = -lcurses -lm
+EXEC = game
 
-BUILD_DIR = ./bin
+_DEPS = arraylist.h
+DEPS = $(patsubst %, $(IDIR)/%, $(_DEPS))
 
-game: game.c;
-	mkdir -p $(BUILD_DIR)
-	$(CC) game.c -o $(BUILD_DIR)/game $(CFLAGS) $(LIBS)
+_OBJ = arraylist.o game.o
+OBJ = $(patsubst %, $(ODIR)/%, $(_OBJ))
+
+$(ODIR)/%.o: %.c $(DEPS)
+	$(CC) -c -o $@ $< $(CFLAGS)
+
+$(EXEC): $(OBJ)
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 .PHONY: clean
 
 clean: 
-	rm -rf $(BUILD_DIR)/*
+	rm -f $(ODIR)/*.o
+	rm -f ./$(EXEC)
 

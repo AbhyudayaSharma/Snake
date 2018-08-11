@@ -1,1 +1,4 @@
-bin/*
+# Compiled files
+obj/*
+game
+game.exe
