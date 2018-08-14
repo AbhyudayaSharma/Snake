@@ -10,6 +10,9 @@
 
 #include "arraylist.h"
 
+// ASCII Ctrl+C
+#define KEY_CTRL_C 0x3
+
 // PDCurses defines bool as unsigned char
 // Use common way to invoke strcpy
 // Uses windows.h and unistd.h for sleep functions
@@ -61,11 +64,11 @@ void initCurses() {
 
 // Acts as a splash screen
 bool runGame() {
-    printw("Hello World.\nA simple movement tool.\nPress 'q' to quit or press any other key to continue...");
+    printw("A Snake Game\nCopyright (c) Abhyudaya Sharma 2018.\nPress 'q' to quit or press any other key to continue...");
     refresh();
     int ch = getch();
 
-    if (ch == 'q') {
+    if (ch == 'q' || ch == KEY_CTRL_C) {
         return false;
     } else {
         return true;
@@ -180,6 +183,7 @@ void validateInput(int* input) {
         case KEY_RIGHT:
         case KEY_LEFT:
         case 'q':
+        case KEY_CTRL_C:
             break;
         default:
             *input = ERR;
@@ -319,6 +323,7 @@ void loop() {
                 }
                 break;
             case 'q':
+            case KEY_CTRL_C:
                 stringCopy(gameOverReason, MAX_REASON_LEN, "Why did you quit? You were doing quite well!");
                 flag = false;
                 break;
