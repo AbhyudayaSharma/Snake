@@ -6,6 +6,7 @@
 #include <curses.h>
 #include <stdlib.h>
 #include <time.h>
+#include <math.h>
 
 #include "arraylist.h"
 
@@ -167,8 +168,9 @@ bool moveSnake(ArrayList* points, int dy, int dx, char* reason) {
  * by keeping the key pressed.
  */
 int getTimeout(int level) {
-    // TODO Create a difficulty based timeout
-    return 200;
+    const int initTimeout = 200;
+    const double scale = -0.020;
+    return (int) (initTimeout * exp(level * scale));
 }
 
 void validateInput(int* input) {
@@ -335,7 +337,7 @@ void loop() {
         }
 
         refresh();
-        timeout(getTimeout(0)); // Start automatic movement after first keystroke
+        timeout(getTimeout(score)); // Start automatic movement after first keystroke
     }
 
     freeArrayList(&points);
