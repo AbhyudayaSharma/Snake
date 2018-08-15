@@ -1,7 +1,12 @@
 #include "arraylist.h"
 
-#include <string.h>
+// macOS Clang doesn't have <malloc.h>
+#ifdef __APPLE__
+#include <stdlib.h>
+#else
 #include <malloc.h>
+#endif // __APPLE__
+#include <string.h>
 #include <assert.h>
 
 void initArrayList(ArrayList* list, size_t size, size_t memSize) {
