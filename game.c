@@ -171,8 +171,8 @@ bool moveSnake(ArrayList* points, int dy, int dx, char* reason) {
  * by keeping the key pressed.
  */
 int getTimeout(int level) {
-    const int initTimeout = 200;
-    const double scale = -0.020;
+    const int initTimeout = 175;
+    const double scale = -0.030;
     return (int) (initTimeout * exp(level * scale));
 }
 
