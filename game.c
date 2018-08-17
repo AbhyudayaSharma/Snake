@@ -178,6 +178,22 @@ int getTimeout(int level) {
 
 void validateInput(int* input) {
     switch (*input) {
+        case 'w':
+        case 'W':
+            *input = KEY_UP;
+            break;
+        case 'a':
+        case 'A':
+            *input = KEY_LEFT;
+            break;
+        case 's':
+        case 'S':
+            *input = KEY_DOWN;
+            break;
+        case 'd':
+        case 'D':
+            *input = KEY_RIGHT;
+            break;
         case KEY_UP:
         case KEY_DOWN:
         case KEY_RIGHT:
