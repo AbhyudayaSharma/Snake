@@ -2,3 +2,12 @@
 obj/*
 game
 game.exe
+
+# Generated Files
+*.obj
+*.o
+*.so
+*.lib
+Debug/
+x64/
+
