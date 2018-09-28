@@ -9,5 +9,9 @@ game.exe
 *.so
 *.lib
 Debug/
+Release/
 x64/
+
+# Visual Studio User files
+.vs/
 
