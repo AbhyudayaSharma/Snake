@@ -1,3 +1,5 @@
+# Makefile used for Linux and macOs builds
+
 IDIR = include
 ODIR = obj
 CC = gcc

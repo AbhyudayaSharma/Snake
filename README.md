@@ -1,10 +1,15 @@
 # Snake
 A Snake game made in C using libncurses
 
-The executable is built in the <code>$PROJECT_ROOT/obj</code> folder
+The executable is built in the <code>obj</code> folder for Linux and macOS. For Windows, it is built inside the <code>Debug</code> folder.
+
+**Note**: PDCurses submodule is required to build on Windows but is NOT required for Linux and macOS. However, Xcode is required on macOS. On Linux, it required to install the ncurses package for your distro.
 
 ## Building on Linux
 1. Install libncurses
+    - For Debian based distros: <code>apt-get install libncurses5-dev</code>
+    - For Fedora: <code>yum install ncurses-devel</code>
+    - For OpenSUSE: <code>zypper in ncurses-devel</code>
 2. Clone the repository
 3. Run <code>make</code>
 4. Run the executable <code>game</code>
@@ -16,3 +21,10 @@ The executable is built in the <code>$PROJECT_ROOT/obj</code> folder
 4. Run <code>make</code>
 
 Run <code>make clean</code> to remove compiled files
+
+## Building on Windows with Visual Studio 2017
+1. Clone the repository with <code>--recurse-submodules</code> flag.
+2. Navigate to <code>PDCurses\wincon</code> and run <code>nmake -f Makefile.vc</code> using the Developer Command Prompt.
+3. Open the <code>Snake.sln</code> with Visual Studio. Select x86 Debug or Release and click on the run button.
+
+We are able to to make only 32-bit binaries as PDCurses currently provides only a 32 bit library.
