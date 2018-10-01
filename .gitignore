@@ -2,3 +2,16 @@
 obj/*
 game
 game.exe
+
+# Generated Files
+*.obj
+*.o
+*.so
+*.lib
+Debug/
+Release/
+x64/
+
+# Visual Studio User files
+.vs/
+

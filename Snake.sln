@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2003
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Snake", "Snake.vcxproj", "{CBDE49F3-52C5-40B7-8FFB-AC9E308BDD8E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Miscellaneous items", "Miscellaneous items", "{0004B78E-DE7A-41AF-A613-D05335B58EF2}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		.gitmodules = .gitmodules
+		LICENSE = LICENSE
+		Makefile = Makefile
+		README.md = README.md
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CBDE49F3-52C5-40B7-8FFB-AC9E308BDD8E}.Debug|x64.ActiveCfg = Debug|x64
+		{CBDE49F3-52C5-40B7-8FFB-AC9E308BDD8E}.Debug|x64.Build.0 = Debug|x64
+		{CBDE49F3-52C5-40B7-8FFB-AC9E308BDD8E}.Debug|x86.ActiveCfg = Debug|Win32
+		{CBDE49F3-52C5-40B7-8FFB-AC9E308BDD8E}.Debug|x86.Build.0 = Debug|Win32
+		{CBDE49F3-52C5-40B7-8FFB-AC9E308BDD8E}.Release|x64.ActiveCfg = Release|x64
+		{CBDE49F3-52C5-40B7-8FFB-AC9E308BDD8E}.Release|x64.Build.0 = Release|x64
+		{CBDE49F3-52C5-40B7-8FFB-AC9E308BDD8E}.Release|x86.ActiveCfg = Release|Win32
+		{CBDE49F3-52C5-40B7-8FFB-AC9E308BDD8E}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {15061F2B-6289-40EE-A027-D234573969CA}
+	EndGlobalSection
+EndGlobal
