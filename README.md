@@ -1,7 +1,7 @@
 # Snake
 A Snake game made in C using libncurses
 
-The executable is built in the <code>obj</code> folder for Linux and macOS. For Windows, it is built inside the <code>Debug</code> folder.
+For Windows, the executable is built inside the <code>Debug</code> or the <code>Release</code> folder, depending on the configuration chosen while building through Visual Studio. The executable is called <code>game</code> on Linux and macOS.
 
 **Note**: PDCurses submodule is required to build on Windows but is NOT required for Linux and macOS. However, Xcode is required on macOS. On Linux, it required to install the ncurses package for your distro.
 
