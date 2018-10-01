@@ -87,7 +87,7 @@ inline bool isInBounds(Point p) {
 
 bool isOverlapped(Point p, const ArrayList* points) {
     size_t len = listGetLength(points);
-    for (int i = 0; i < len; i++) {
+    for (size_t i = 0; i < len; i++) {
         if (arePointsEqual(p, listGet(Point, points, i))) {
             return true;
         }
@@ -367,7 +367,7 @@ void loop() {
 
 int main(int argc, char ** argv) {
     initCurses(); // Init curses
-    srand(time(NULL)); // Initialize rand with seed as current time
+    srand((unsigned int) time(NULL)); // Initialize rand with seed as current time
 
     if (runGame()) {
         loop(); /* Main logic of the program */
