@@ -15,15 +15,12 @@
 
 // PDCurses defines bool as unsigned char
 // Use common way to invoke strcpy
-// Uses windows.h and unistd.h for sleep functions
 #ifdef _WIN32
 #define true TRUE
 #define false FALSE
-#include <windows.h>
 
 #define stringCopy(dest, size, source) strcpy_s(dest, size, source)
 #else
-#include <unistd.h>
 #include <stdbool.h>
 
 #define stringCopy(dest, size, source) strncpy(dest, source, size)
@@ -32,6 +29,7 @@
 // Chars drawn for snake head and snake body points
 #define SNAKE_HEAD ACS_DIAMOND 
 #define SNAKE_BODY ACS_BLOCK
+
 // Initial snake length
 #define SNAKE_LEN 3
 
@@ -47,10 +45,12 @@ typedef struct {
     int x;
 } Point;
 
-inline bool arePointsEqual(Point x, Point y) {
-    return x.x == y.x && x.y == y.y;
+/* Checks if the two points are equal */
+inline bool arePointsEqual(Point a, Point b) {
+    return a.x == b.x && a.y == b.y;
 }
 
+/* Initializes ncurses (or PDCurses) */
 void initCurses() {
     initscr();
     raw();
@@ -62,7 +62,7 @@ void initCurses() {
     init_pair(1, COLOR_RED, COLOR_BLACK);
 }
 
-// Acts as a splash screen
+/* Acts as a splash screen */
 bool runGame() {
     printw("A Snake Game\nCopyright (c) Abhyudaya Sharma 2018.\nPress 'q' to quit or press any other key to continue...");
     refresh();
@@ -75,6 +75,7 @@ bool runGame() {
     }
 }
 
+/* Checks if the Point p is in the bounds of the display */
 inline bool isInBounds(Point p) {
     int xMax, yMax;
     getmaxyx(stdscr, yMax, xMax);
@@ -85,6 +86,7 @@ inline bool isInBounds(Point p) {
     }
 }
 
+/* Function to check if the Point p is contained in the ArrayList of Points */
 bool isOverlapped(Point p, const ArrayList* points) {
     size_t len = listGetLength(points);
     for (size_t i = 0; i < len; i++) {
@@ -93,38 +95,6 @@ bool isOverlapped(Point p, const ArrayList* points) {
         }
     }
     return false;
-}
-
-void endGame(const char* reason, unsigned int score) {
-    timeout(-1); // Get normal input
-	clear();
-    flushinp(); // Clear input buffer
-
-    attron(A_BOLD);
-    addstr("Game Over!\n");
-    attroff(A_BOLD);
-
-    addstr(reason);
-    addch('\n');
-    addstr("Your Score: ");
-    char scoreStr[13]; // 32 bit ints should fit in a 12 characters + 1 \n char
-    snprintf(scoreStr, 13, "%u\n", score);
-    addstr(scoreStr);
-    refresh();
-
-    // sleep
-    int time = 3; // seconds
-#ifdef _WIN32
-    Sleep(time * 1000);
-#else
-    sleep(time);
-#endif
-
-    addstr("Press any key to exit...");
-    flushinp(); // Clear input buffer
-    getch();
-    
-    refresh();
 }
 
 /*
@@ -258,6 +228,7 @@ void resetSnake(ArrayList* points) {
     }
 }
 
+/* Contains the loop which is constantly run when the game is running */
 void loop() {
     // Snake head is stored at index 0
     ArrayList points;
@@ -361,8 +332,12 @@ void loop() {
         timeout(getTimeout(score)); // Start automatic movement after first keystroke
     }
 
+    // End the game
     freeArrayList(&points);
-    endGame(gameOverReason, score);
+    endwin(); // cleanup curses
+
+    // Print the details of this session
+    printf("Game Over!\n%s\nYour score: %u\n", gameOverReason, score);
 }
 
 int main(int argc, char ** argv) {
@@ -370,10 +345,9 @@ int main(int argc, char ** argv) {
     srand((unsigned int) time(NULL)); // Initialize rand with seed as current time
 
     if (runGame()) {
-        loop(); /* Main logic of the program */
+        loop(); /* Main logic of the program. Cleans up curses when game gets over. */
     }
 
-    endwin(); // cleanup curses
     return 0;
 }
 
