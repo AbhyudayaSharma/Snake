@@ -338,8 +338,14 @@ void loop() {
 
     // Print the details of this session
     printf("Game Over!\n%s\nYour score: %u\n", gameOverReason, score);
+#ifdef _WIN32
+	// avoid unexpected termination when running the .exe file outside
+	// a terminal window 
+	system("pause");
+#endif // _WIN32
 }
 
+/* The main method */
 int main(int argc, char ** argv) {
     initCurses(); // Init curses
     srand((unsigned int) time(NULL)); // Initialize rand with seed as current time
