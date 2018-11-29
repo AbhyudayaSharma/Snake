@@ -1,4 +1,7 @@
 # Snake
+
+[![Build Status](https://travis-ci.com/AbhyudayaSharma/Snake.svg?branch=master)](https://travis-ci.com/AbhyudayaSharma/Snake)
+
 A Snake game made in C using libncurses
 
 For Windows, the executable is built inside the <code>Debug</code> or the <code>Release</code> folder, depending on the configuration chosen while building through Visual Studio. The executable is called <code>game</code> on Linux and macOS.

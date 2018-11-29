@@ -146,6 +146,11 @@ int getTimeout(int level) {
     return (int) (initTimeout * exp(level * scale));
 }
 
+/*
+ * Checks if the input is valid or not.
+ * If the input is not valid, input is set to ERR.
+ * WASD keys are also converted to Arrow keys.
+ */
 void validateInput(int* input) {
     switch (*input) {
         case 'w':
