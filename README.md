@@ -1,6 +1,7 @@
 # Snake
 
 [![Build Status](https://travis-ci.com/AbhyudayaSharma/Snake.svg?branch=master)](https://travis-ci.com/AbhyudayaSharma/Snake)
+[![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/AbhyudayaSharma/Snake.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/AbhyudayaSharma/Snake/context:cpp)
 
 A Snake game made in C using libncurses
 
