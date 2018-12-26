@@ -11,6 +11,6 @@ pool:
 
 steps:
 - script: |
-    - sudo apt install libncurses5-dev
+    - apt install libncurses5-dev
     - make
   displayName: 'make'
